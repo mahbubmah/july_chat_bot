@@ -141,7 +141,7 @@ def package_details(intent_request):
                  {'contentType': 'PlainText',
                   'content': '{} will cost {}. Thanks for visiting us. Bye'.format(package_name,price)})
 
-
+""" ---Distribution status intent """
 
 def distribution_status(intent_request):
     return close(intent_request['sessionAttributes'],
@@ -150,6 +150,45 @@ def distribution_status(intent_request):
                   'content': 'within 5 to 7 days of paid out date, you will get the cash'})
 
 
+""" ---Distribution send form intent function """
+def validate_send_distribution_form(distr_type):
+    distr_type_list = ['inservice', 'hardship', 'termination']
+    str_distr_types=', '.join(str(x) for x in distr_type_list)
+    if distr_type is not None and distr_type.lower() not in distr_type_list:
+        return build_validation_result(False,
+                                       'Distr_Type',
+                                       'We do not have {} distibution type for now, we have {} distribution\n'.format(distr_type,str_distr_types))
+
+    return build_validation_result(True, None, None)
+
+def send_distribution_form(intent_request):
+    distr_type = get_slots(intent_request)["Distr_Type"]
+    slots = get_slots(intent_request)
+
+    validation_result = validate_send_distribution_form(distr_type)
+
+    if not validation_result['isValid']:
+            slots[validation_result['violatedSlot']] = None
+            return elicit_slot(intent_request['sessionAttributes'],
+                              intent_request['currentIntent']['name'],
+                              slots,
+                              validation_result['violatedSlot'],
+                              validation_result['message'])  
+
+    form_url = ''
+    if distr_type == 'inservice':
+        form_url = 'https://drive.google.com/open?id=18C-21BgREbpBDHXMocuyxid44j_GXVG0A8ykAXumjqg'
+    elif  distr_type == 'hardship':
+        form_url = 'https://drive.google.com/open?id=11ugYWLyFmza5HLU80dR93wGCB-5z6xi2ygvLFxymPcU'
+    elif  distr_type == 'termination':
+        form_url = 'https://drive.google.com/open?id=1xysHuqpQbTrCRS3CxoC0FO8Zu4ZGqn8msEXll1lbCGs'
+    else:
+        form_url =distr_type+ 'No Url Found'
+
+    return close(intent_request['sessionAttributes'],
+                 'Fulfilled',
+                 {'contentType': 'PlainText',
+                  'content': 'Here is the form link \n\n {} \n\n'.format(form_url)})
 """ --- Intents --- """
 
 
@@ -169,29 +208,31 @@ def dispatch(intent_request):
         return package_details(intent_request)
     if intent_name == 'DistributionStatus':
         return distribution_status(intent_request)
+    if intent_name == 'SendDistributionForm':
+        return send_distribution_form(intent_request)
 
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
 
 """ --- Main handler --- """
 
-def test_db_con():
-    item_count = 0
+# def test_db_con():
+#     item_count = 0
 
-    with conn.cursor() as cur:
-        cur.execute("create table Employee3 ( EmpID  int NOT NULL, Name varchar(255) NOT NULL, PRIMARY KEY (EmpID))")  
-        cur.execute('insert into Employee3 (EmpID, Name) values(1, "Joe")')
-        cur.execute('insert into Employee3 (EmpID, Name) values(2, "Bob")')
-        cur.execute('insert into Employee3 (EmpID, Name) values(3, "Mary")')
-        conn.commit()
-        cur.execute("select * from Employee3")
-        for row in cur:
-            item_count += 1
-            logger.info(row)
-            #print(row)
-        conn.commit()
+#     with conn.cursor() as cur:
+#         cur.execute("create table Employee3 ( EmpID  int NOT NULL, Name varchar(255) NOT NULL, PRIMARY KEY (EmpID))")  
+#         cur.execute('insert into Employee3 (EmpID, Name) values(1, "Joe")')
+#         cur.execute('insert into Employee3 (EmpID, Name) values(2, "Bob")')
+#         cur.execute('insert into Employee3 (EmpID, Name) values(3, "Mary")')
+#         conn.commit()
+#         cur.execute("select * from Employee3")
+#         for row in cur:
+#             item_count += 1
+#             logger.info(row)
+#             #print(row)
+#         conn.commit()
 
-    return "Added %d items from RDS MySQL table" %(item_count)
+#     return "Added %d items from RDS MySQL table" %(item_count)
 
 def lambda_handler(event, context):
     """
