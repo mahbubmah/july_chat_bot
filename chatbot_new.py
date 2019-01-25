@@ -208,7 +208,6 @@ def get_person_account_balance(first_name,last_name,dob):
     return 'Sorry we are unable to find you in our system. Thank you.'
 
 def SSNAccountBal(intent_request):
-    logger.info(slots["Birth_Date"])
     slot_list=get_slots(intent_request)
     first_name=slot_list["First_Name"]
     last_name=slot_list["Last_Name"]
@@ -218,7 +217,7 @@ def SSNAccountBal(intent_request):
     return close(intent_request['sessionAttributes'],
                  'Fulfilled',
                  {'contentType': 'PlainText',
-                  'content': 'Your current account balance is {}'.format(bal_info)})
+                  'content': '{}'.format(bal_info)})
 
 
 def get_person_loan_balance(first_name,last_name,dob):
@@ -241,7 +240,7 @@ def SSNLoanBal(intent_request):
     return close(intent_request['sessionAttributes'],
                  'Fulfilled',
                  {'contentType': 'PlainText',
-                  'content': 'Your current loan balance is {}'.format(bal_info)})
+                  'content': '{}'.format(bal_info)})
 
 
 
