@@ -150,6 +150,8 @@ def distribution_status(intent_request):
                   'content': 'within 5 to 7 days of paid out date, you will get the cash'})
 
 
+    # return 'Added {} items from RDS MySQL table'.format(emp_name)
+
 """ ---Distribution send form intent function """
 def validate_send_distribution_form(distr_type):
     distr_type_list = ['inservice', 'hardship', 'termination']
@@ -160,6 +162,8 @@ def validate_send_distribution_form(distr_type):
                                        'We do not have {} distibution type for now, we have {} distribution\n'.format(distr_type,str_distr_types))
 
     return build_validation_result(True, None, None)
+
+
 
 def send_distribution_form(intent_request):
     distr_type = get_slots(intent_request)["Distr_Type"]
@@ -183,12 +187,64 @@ def send_distribution_form(intent_request):
     elif  distr_type == 'termination':
         form_url = 'https://drive.google.com/open?id=1xysHuqpQbTrCRS3CxoC0FO8Zu4ZGqn8msEXll1lbCGs'
     else:
-        form_url =distr_type+ 'No Url Found'
+        form_url = distr_type+ ' No Url Found'
 
     return close(intent_request['sessionAttributes'],
                  'Fulfilled',
                  {'contentType': 'PlainText',
                   'content': 'Here is the form link \n\n {} \n\n'.format(form_url)})
+
+
+
+def get_person_account_balance(first_name,last_name,dob):
+    sql_query = "select AccountBalance from rkstatement_personhistory  where FIRSTNAM='{}' and LASTNAM='{}' and DOB='{}'  limit 1;".format(first_name,last_name,dob)
+    logger.info(sql_query)
+    with conn.cursor() as cur:        
+        cur.execute(sql_query)
+        for row in cur:
+            logger.info('test log'+ str(row[0])+' USD')
+            return str(row[0])+' USD'
+
+    return 'Sorry we are unable to find you in our system. Thank you.'
+
+def SSNAccountBal(intent_request):
+    logger.info(slots["Birth_Date"])
+    slot_list=get_slots(intent_request)
+    first_name=slot_list["First_Name"]
+    last_name=slot_list["Last_Name"]
+    dob=slot_list["Birth_Date"]
+
+    bal_info=get_person_account_balance(first_name,last_name,dob)
+    return close(intent_request['sessionAttributes'],
+                 'Fulfilled',
+                 {'contentType': 'PlainText',
+                  'content': 'Your current account balance is {}'.format(bal_info)})
+
+
+def get_person_loan_balance(first_name,last_name,dob):
+    sql_query="select AccountBalance from rkstatement_personhistory   where FIRSTNAM='{}' and LASTNAM='{}' and DOB='{}'  limit 1;".format(first_name,last_name,dob)
+    with conn.cursor() as cur:        
+        cur.execute(sql_query)
+        for row in cur:
+            logger.info('test log'+ str(row[0])+' USD')
+            return str(row[0])+' USD'
+
+    return 'Sorry we are unable to find you in our system. Thank you.'
+
+def SSNLoanBal(intent_request):
+    slot_list=get_slots(intent_request)
+    first_name=slot_list["First_Name"]
+    last_name=slot_list["Last_Name"]
+    dob=slot_list["Birth_Date"]
+
+    bal_info=get_person_loan_balance(first_name,last_name,dob)
+    return close(intent_request['sessionAttributes'],
+                 'Fulfilled',
+                 {'contentType': 'PlainText',
+                  'content': 'Your current loan balance is {}'.format(bal_info)})
+
+
+
 """ --- Intents --- """
 
 
@@ -210,29 +266,15 @@ def dispatch(intent_request):
         return distribution_status(intent_request)
     if intent_name == 'SendDistributionForm':
         return send_distribution_form(intent_request)
+    if intent_name == 'SSNLoanBal':
+        return SSNLoanBal(intent_request)
+    if intent_name == 'SSNAccountBal':
+        return SSNAccountBal(intent_request)
 
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
 
 """ --- Main handler --- """
-
-# def test_db_con():
-#     item_count = 0
-
-#     with conn.cursor() as cur:
-#         cur.execute("create table Employee3 ( EmpID  int NOT NULL, Name varchar(255) NOT NULL, PRIMARY KEY (EmpID))")  
-#         cur.execute('insert into Employee3 (EmpID, Name) values(1, "Joe")')
-#         cur.execute('insert into Employee3 (EmpID, Name) values(2, "Bob")')
-#         cur.execute('insert into Employee3 (EmpID, Name) values(3, "Mary")')
-#         conn.commit()
-#         cur.execute("select * from Employee3")
-#         for row in cur:
-#             item_count += 1
-#             logger.info(row)
-#             #print(row)
-#         conn.commit()
-
-#     return "Added %d items from RDS MySQL table" %(item_count)
 
 def lambda_handler(event, context):
     """
@@ -243,5 +285,5 @@ def lambda_handler(event, context):
     os.environ['TZ'] = 'America/New_York'
     time.tzset()
     logger.debug('event.bot.name={}'.format(event['bot']['name']))
-    #return test_db_con()
+
     return dispatch(event)
