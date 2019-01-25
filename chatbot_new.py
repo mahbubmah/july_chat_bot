@@ -1,0 +1,206 @@
+import math
+import dateutil.parser
+import datetime
+import time
+import os
+import logging
+import rds_config
+import sys
+import pymysql
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+rds_host  = rds_config.db_endpoint
+name = rds_config.db_username
+password = rds_config.db_password
+db_name = rds_config.db_name
+
+try:
+    conn = pymysql.connect(rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+except:
+    logger.error("ERROR: Unexpected error: Could not connect to MySQL instance.")
+    sys.exit()
+
+logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+""" --- Helpers to build responses which match the structure of the necessary dialog actions --- """
+
+
+def get_slots(intent_request):
+    return intent_request['currentIntent']['slots']
+
+
+def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message):
+    return {
+        'sessionAttributes': session_attributes,
+        'dialogAction': {
+            'type': 'ElicitSlot',
+            'intentName': intent_name,
+            'slots': slots,
+            'slotToElicit': slot_to_elicit,
+            'message': message
+        }
+    }
+
+
+def close(session_attributes, fulfillment_state, message):
+    response = {
+        'sessionAttributes': session_attributes,
+        'dialogAction': {
+            'type': 'Close',
+            'fulfillmentState': fulfillment_state,
+            'message': message
+        }
+    }
+
+    return response
+
+
+def delegate(session_attributes, slots):
+    return {
+        'sessionAttributes': session_attributes,
+        'dialogAction': {
+            'type': 'Delegate',
+            'slots': slots
+        }
+    }
+
+
+""" --- Helper Functions --- """
+
+
+def parse_int(n):
+    try:
+        return int(n)
+    except ValueError:
+        return float('nan')
+
+
+def build_validation_result(is_valid, violated_slot, message_content):
+    if message_content is None:
+        return {
+            "isValid": is_valid,
+            "violatedSlot": violated_slot,
+        }
+
+    return {
+        'isValid': is_valid,
+        'violatedSlot': violated_slot,
+        'message': {'contentType': 'PlainText', 'content': message_content}
+    }
+
+
+def isvalid_date(date):
+    try:
+        dateutil.parser.parse(date)
+        return True
+    except ValueError:
+        return False
+
+""" --- Functions that control the bot's behavior --- """
+
+def get_package_price(package_name):
+    prices = {'gold': 32000, 'premium': 52000, 'trail': 5000}
+    return prices[package_name.lower()]
+
+
+def validate_package_details(package_name):
+    package_names = ['gold', 'premium', 'trail']
+    if package_name is not None and package_name.lower() not in package_names:
+        return build_validation_result(False,
+                                       'PACKAGE_NAME',
+                                       'We do not have {}, would you like a different type of package?  Our most popular package is trail'.format(package_name))
+
+    return build_validation_result(True, None, None)
+
+""" --- Functions that control the bot's behavior --- """
+def package_overview(intent_request):
+    return close(intent_request['sessionAttributes'],
+                 'Fulfilled',
+                 {'contentType': 'PlainText',
+                  'content': 'we have gold, premium and trail package'})
+
+def package_details(intent_request):
+    package_name = get_slots(intent_request)["PACKAGE_NAME"]
+    slots = get_slots(intent_request)
+
+    validation_result = validate_package_details(package_name)
+
+    if not validation_result['isValid']:
+            slots[validation_result['violatedSlot']] = None
+            return elicit_slot(intent_request['sessionAttributes'],
+                              intent_request['currentIntent']['name'],
+                              slots,
+                              validation_result['violatedSlot'],
+                              validation_result['message'])
+
+    price = get_package_price(package_name)
+
+    return close(intent_request['sessionAttributes'],
+                 'Fulfilled',
+                 {'contentType': 'PlainText',
+                  'content': '{} will cost {}. Thanks for visiting us. Bye'.format(package_name,price)})
+
+
+
+def distribution_status(intent_request):
+    return close(intent_request['sessionAttributes'],
+                 'Fulfilled',
+                 {'contentType': 'PlainText',
+                  'content': 'within 5 to 7 days of paid out date, you will get the cash'})
+
+
+""" --- Intents --- """
+
+
+def dispatch(intent_request):
+    """
+    Called when the user specifies an intent for this bot.
+    """
+
+    logger.debug('dispatch userId={}, intentName={}'.format(intent_request['userId'], intent_request['currentIntent']['name']))
+
+    intent_name = intent_request['currentIntent']['name']
+
+    # Dispatch to your bot's intent handlers
+    if intent_name == 'PackageOverview':
+        return package_overview(intent_request)
+    if intent_name == 'PackageDetails':
+        return package_details(intent_request)
+    if intent_name == 'DistributionStatus':
+        return distribution_status(intent_request)
+
+    raise Exception('Intent with name ' + intent_name + ' not supported')
+
+
+""" --- Main handler --- """
+
+def test_db_con():
+    item_count = 0
+
+    with conn.cursor() as cur:
+        cur.execute("create table Employee3 ( EmpID  int NOT NULL, Name varchar(255) NOT NULL, PRIMARY KEY (EmpID))")  
+        cur.execute('insert into Employee3 (EmpID, Name) values(1, "Joe")')
+        cur.execute('insert into Employee3 (EmpID, Name) values(2, "Bob")')
+        cur.execute('insert into Employee3 (EmpID, Name) values(3, "Mary")')
+        conn.commit()
+        cur.execute("select * from Employee3")
+        for row in cur:
+            item_count += 1
+            logger.info(row)
+            #print(row)
+        conn.commit()
+
+    return "Added %d items from RDS MySQL table" %(item_count)
+
+def lambda_handler(event, context):
+    """
+    Route the incoming request based on intent.
+    The JSON body of the request is provided in the event slot.
+    """
+    # By default, treat the user request as coming from the America/New_York time zone.
+    os.environ['TZ'] = 'America/New_York'
+    time.tzset()
+    logger.debug('event.bot.name={}'.format(event['bot']['name']))
+    #return test_db_con()
+    return dispatch(event)

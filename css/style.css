@@ -1,0 +1,147 @@
+html,body{height: 100%;}
+
+.header{
+	padding: 10px;
+	max-height: 80px;
+	border-bottom: 1px solid #ccc;
+}
+.footer{
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+	max-height: 30px;
+	border-top: 1px solid #ccc;
+}
+
+.copyrights{text-align: center; font-size: 12px; padding: 5px 10px;}
+
+.bodyContent{
+	height: calc(100% - 110px);
+	left: auto;
+}
+.h100{
+	height: 100%;
+}
+
+.chatbotArea{
+	position: absolute;
+    background-color: #d6d6d6;
+    top: 65px;
+    right: 0;
+    width: 400px;
+    height: calc(100% - 65px);
+    padding: 20px;
+    box-shadow: 0px 0px 5px 1px #555;
+}
+
+/*Chat Bot CSS*/
+
+#conversation{
+	width: 100%;
+	height: calc(100% - 115px);
+	border: 1px solid #bbb; 
+	background-color: #eee; 
+	padding: 4px;
+	overflow: auto;
+}
+
+input#wisdom {
+	font-size: 1em;
+    width: 100%;
+    line-height: 40px;
+    border-radius: 2px;
+    border: 1px solid #bbb;
+    background-color: #f1f1f1;
+    padding: 0 10px;
+}
+
+input::placeholder {
+	color: #ccc;
+	font-style: italic;
+}
+
+p.userRequest {
+	margin: 4px;
+	padding: 4px 10px 4px 10px;
+	border-radius: 4px;
+	min-width: 50%;
+	max-width: 100%;
+	float: left;
+	border: 1px solid #d6d8db;
+	border-radius: 2px;
+    color: #383d41;
+    background-color: #e2e3e5;
+
+}
+
+p.lexResponse {
+	margin: 4px;
+	padding: 4px 10px 4px 10px;
+	border-radius: 4px;
+	text-align: right;
+	min-width: 50%;
+	max-width: 100%;
+	float: right;
+	background-color: #cce5ff;
+	color: #004085;
+	border: 1px solid #b8daff;
+	border-radius: 2px;
+}
+
+p.lexError {
+	margin: 4px;
+	padding: 4px 10px 4px 10px;
+	border-radius: 4px;
+	text-align: right;
+	min-width: 50%;
+	max-width: 85%;
+	float: right;
+	background-color: #f77;
+}
+
+		
+/*Card*/
+.section-gray {
+	background: #eee;
+	padding: 100px 0 30px 0;
+	height: calc(100% - 90px);
+}
+.card-profile .card-avatar, .card-testimonial .card-avatar {
+	max-width: 130px;
+	max-height: 130px;
+	margin: -50px auto 0;
+	border-radius: 50%;
+	overflow: hidden;
+	box-shadow: 0 16px 38px -12px rgba(0, 0, 0, 0.56), 0 4px 25px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.card img {
+	width: 100%;
+	height: auto;
+}
+.card-product .card-caption,
+{
+	text-align: center;
+}
+
+.card-description p {
+    color: #888;
+}
+
+.card-caption,
+.card-caption a {
+    color: #333;
+    text-decoration: none;
+}
+
+.card-caption {
+    font-weight: 700;
+    font-family: "Roboto Slab", "Times New Roman", serif;
+}
+.card .table {
+    padding: 15px 30px;
+}
+
+@media (max-width: 576px) {
+	.section-gray{display: none;}
+}
