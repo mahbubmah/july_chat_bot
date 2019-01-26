@@ -142,12 +142,65 @@ def package_details(intent_request):
                   'content': '{} will cost {}. Thanks for visiting us. Bye'.format(package_name,price)})
 
 """ ---Distribution status intent """
+def validate_distribution_status(project_id):
+    msg='We do not have any distribution with id #{}, Please try again'.format(project_id)
+    try:
+        sql_query = "select * from distribution  where ProjectID={} limit 1;".format(project_id)
+        logger.info(sql_query)
+        with conn.cursor() as cur:        
+            cur.execute(sql_query)
+            for row in cur:
+                return build_validation_result(True, None, None)
+
+        return build_validation_result(False,'PROJECT_ID',msg)
+    except:
+        return build_validation_result(False,'PROJECT_ID',msg)
+
+
 
 def distribution_status(intent_request):
-    return close(intent_request['sessionAttributes'],
-                 'Fulfilled',
-                 {'contentType': 'PlainText',
-                  'content': 'within 5 to 7 days of paid out date, you will get the cash'})
+    msg='Sorry We dont have any infromation againest your id. Please check and try again. Thank you.'
+    project_id = get_slots(intent_request)["PROJECT_ID"]
+    validation_result = validate_distribution_status(project_id)
+    slots = get_slots(intent_request)
+    if not validation_result['isValid']:
+            slots[validation_result['violatedSlot']] = None
+            return elicit_slot(intent_request['sessionAttributes'],
+                              intent_request['currentIntent']['name'],
+                              slots,
+                              validation_result['violatedSlot'],
+                              validation_result['message'])
+
+    try:
+        sql_query = "select Status, DATE_FORMAT(PaidOutDate, '%m/%d/%Y') DatePaidOut from distribution  where ProjectID={} limit 1;".format(project_id)
+        logger.info(sql_query)
+        with conn.cursor() as cur:        
+            cur.execute(sql_query)
+            for row in cur:
+                pr_status=str(row[0])
+                paid_out_date=str(row[1])
+                msg="Your distribution status is {}.".format(pr_status)
+
+                if pr_status == 'Paid Out':
+                    msg = msg + " and paid out date %s" % (paid_out_date)
+                else:
+                    msg = msg + " and paid out date not found"
+
+                return close(intent_request['sessionAttributes'],
+                            'Fulfilled',
+                            {'contentType': 'PlainText','content': msg})
+
+        return close(intent_request['sessionAttributes'],
+                    'Fulfilled',
+                    {'contentType': 'PlainText','content': msg})
+
+    except:
+        return close(intent_request['sessionAttributes'],
+                    'Fulfilled',
+                    {'contentType': 'PlainText',
+                    'content': msg})
+
+
 
 
     # return 'Added {} items from RDS MySQL table'.format(emp_name)
@@ -180,14 +233,14 @@ def send_distribution_form(intent_request):
                               validation_result['message'])  
 
     form_url = ''
-    if distr_type == 'inservice':
+    if distr_type.lower().replace('-','') == 'inservice':
         form_url = 'https://drive.google.com/open?id=18C-21BgREbpBDHXMocuyxid44j_GXVG0A8ykAXumjqg'
-    elif  distr_type == 'hardship':
+    elif  distr_type.lower() == 'hardship':
         form_url = 'https://drive.google.com/open?id=11ugYWLyFmza5HLU80dR93wGCB-5z6xi2ygvLFxymPcU'
-    elif  distr_type == 'termination':
+    elif  distr_type.lower() == 'termination':
         form_url = 'https://drive.google.com/open?id=1xysHuqpQbTrCRS3CxoC0FO8Zu4ZGqn8msEXll1lbCGs'
     else:
-        form_url = distr_type+ ' No Url Found'
+        form_url = ' No Url Found for distribution type '+distr_type +', We have Hardship, InService and Termination distribution service.'
 
     return close(intent_request['sessionAttributes'],
                  'Fulfilled',
@@ -197,15 +250,18 @@ def send_distribution_form(intent_request):
 
 
 def get_person_account_balance(first_name,last_name,dob):
-    sql_query = "select AccountBalance from rkstatement_personhistory  where FIRSTNAM='{}' and LASTNAM='{}' and DOB='{}'  limit 1;".format(first_name,last_name,dob)
-    logger.info(sql_query)
-    with conn.cursor() as cur:        
-        cur.execute(sql_query)
-        for row in cur:
-            logger.info('test log'+ str(row[0])+' USD')
-            return str(row[0])+' USD'
+    try:
+        sql_query = "select AccountBalance from rkstatement_personhistory  where FIRSTNAM='{}' and LASTNAM='{}' and DOB='{}'  limit 1;".format(first_name,last_name,dob)
+        logger.info(sql_query)
+        with conn.cursor() as cur:        
+            cur.execute(sql_query)
+            for row in cur:
+                logger.info('test log'+ str(row[0])+' USD')
+                return str(row[0])+' USD'
 
-    return 'Sorry we are unable to find you in our system. Thank you.'
+        return 'Sorry we are unable to find you in our system. Thank you.'
+    except:
+        return 'Sorry we are unable to find you in our system. Thank you.'
 
 def SSNAccountBal(intent_request):
     slot_list=get_slots(intent_request)
@@ -221,14 +277,17 @@ def SSNAccountBal(intent_request):
 
 
 def get_person_loan_balance(first_name,last_name,dob):
-    sql_query="select AccountBalance from rkstatement_personhistory   where FIRSTNAM='{}' and LASTNAM='{}' and DOB='{}'  limit 1;".format(first_name,last_name,dob)
-    with conn.cursor() as cur:        
-        cur.execute(sql_query)
-        for row in cur:
-            logger.info('test log'+ str(row[0])+' USD')
-            return str(row[0])+' USD'
+    try:
+        sql_query="select AccountBalance from rkstatement_personhistory   where FIRSTNAM='{}' and LASTNAM='{}' and DOB='{}'  limit 1;".format(first_name,last_name,dob)
+        with conn.cursor() as cur:        
+            cur.execute(sql_query)
+            for row in cur:
+                logger.info('test log'+ str(row[0])+' USD')
+                return str(row[0])+' USD'
 
-    return 'Sorry we are unable to find you in our system. Thank you.'
+        return 'Sorry we are unable to find you in our system. Thank you.'
+    except:
+        return 'Sorry we are unable to find you in our system. Thank you.'
 
 def SSNLoanBal(intent_request):
     slot_list=get_slots(intent_request)
