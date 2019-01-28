@@ -1,0 +1,567 @@
+{
+  "metadata": {
+    "schemaVersion": "1.0",
+    "importType": "LEX",
+    "importFormat": "JSON"
+  },
+  "resource": {
+    "name": "ArfisDietWebAgent",
+    "version": "10",
+    "intents": [
+      {
+        "name": "HI",
+        "version": "6",
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "sampleUtterances": [
+          "Hi",
+          "Hello",
+          "hello anybody there",
+          "anybody there",
+          "hey guys"
+        ],
+        "slots": [],
+        "conclusionStatement": {
+          "messages": [
+            {
+              "groupNumber": 1,
+              "contentType": "PlainText",
+              "content": "Grettings from July business services!! How can I help you?"
+            }
+          ]
+        }
+      },
+      {
+        "name": "SSNAccountBal",
+        "version": "10",
+        "fulfillmentActivity": {
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-east-1:306124426396:function:ArfisDietWebAgentLambda",
+            "messageVersion": "1.0"
+          },
+          "type": "CodeHook"
+        },
+        "sampleUtterances": [
+          "What is my current account balance",
+          "what is my current balance",
+          "i would like to know my current balance",
+          "I am {First_Name} {Last_Name} what is my current balance",
+          "I am {First_Name} what is my current balance"
+        ],
+        "slots": [
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.DATE",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your birthday?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 3,
+            "name": "Birth_Date"
+          },
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.Person",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your first name?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 1,
+            "name": "First_Name"
+          },
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.Person",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your last name?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 2,
+            "name": "Last_Name"
+          }
+        ]
+      },
+      {
+        "name": "DistributionGuide",
+        "version": "5",
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "sampleUtterances": [
+          "Where I can fax the distribution forms",
+          "I need to know the distribution procedure",
+          "How to complete distribution forms",
+          "where I can send the distribution form"
+        ],
+        "slots": [],
+        "conclusionStatement": {
+          "messages": [
+            {
+              "groupNumber": 1,
+              "contentType": "PlainText",
+              "content": "https://drive.google.com/open?id=1XXHsmfLdYEv348YCW4af3CniUDNtrG7IB0QZ2p9-on4              Please do a online distribution with the given location with your user name and password      "
+            }
+          ]
+        }
+      },
+      {
+        "rejectionStatement": {
+          "messages": [
+            {
+              "contentType": "PlainText",
+              "content": "Please go to the above link and let us know if you din't find your report"
+            }
+          ]
+        },
+        "name": "HelpWithReport",
+        "version": "2",
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "sampleUtterances": [
+          "I didn't get my statement report for this quarter",
+          "Why I didn't get my statement report",
+          "I didn't get my quarterly report"
+        ],
+        "slots": [],
+        "followUpPrompt": {
+          "prompt": {
+            "messages": [
+              {
+                "groupNumber": 1,
+                "contentType": "PlainText",
+                "content": "We're checking this issue and will let you know the update as soon as possible."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "groupNumber": 1,
+                "contentType": "PlainText",
+                "content": "Thank you and have a great day!"
+              }
+            ]
+          }
+        },
+        "confirmationPrompt": {
+          "messages": [
+            {
+              "contentType": "PlainText",
+              "content": "julyservices.com/report link                                          did you go to this link"
+            }
+          ],
+          "maxAttempts": 3
+        }
+      },
+      {
+        "name": "DistrPaidOutTimeNeed",
+        "version": "1",
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "sampleUtterances": [
+          "i did not get any cash yes",
+          "within how many days i can get my cash",
+          "how much time need to get the cash"
+        ],
+        "slots": [],
+        "conclusionStatement": {
+          "messages": [
+            {
+              "groupNumber": 1,
+              "contentType": "PlainText",
+              "content": "Within 5 to 7 days of paid out date, you will get the cash."
+            }
+          ]
+        }
+      },
+      {
+        "name": "SendDistributionForm",
+        "version": "2",
+        "fulfillmentActivity": {
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-east-1:306124426396:function:ArfisDietWebAgentLambda",
+            "messageVersion": "1.0"
+          },
+          "type": "CodeHook"
+        },
+        "sampleUtterances": [
+          "I want to do a distribution",
+          "I want a distribution",
+          "I need a distribution"
+        ],
+        "slots": [
+          {
+            "sampleUtterances": [],
+            "slotType": "Distr_Type",
+            "slotTypeVersion": "1",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Which Type?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 1,
+            "name": "Distr_Type"
+          }
+        ]
+      },
+      {
+        "rejectionStatement": {
+          "messages": [
+            {
+              "contentType": "PlainText",
+              "content": "julyservices.com/sign_up                                                           Please go to the link and reset your password."
+            }
+          ]
+        },
+        "name": "HelpWithLogin",
+        "version": "5",
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "sampleUtterances": [
+          "Please help me with account login",
+          "I can't access my account",
+          "I don't know my UserId or password"
+        ],
+        "slots": [],
+        "followUpPrompt": {
+          "prompt": {
+            "messages": [
+              {
+                "groupNumber": 1,
+                "contentType": "PlainText",
+                "content": "julyservices.com                                         Please go to the link and login with your user id and password."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "groupNumber": 1,
+                "contentType": "PlainText",
+                "content": "Thank you. Have a great day!"
+              }
+            ]
+          }
+        },
+        "confirmationPrompt": {
+          "messages": [
+            {
+              "contentType": "PlainText",
+              "content": "Do you have userid and password?"
+            }
+          ],
+          "maxAttempts": 3
+        }
+      },
+      {
+        "name": "DistributionStatus",
+        "version": "8",
+        "fulfillmentActivity": {
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-east-1:306124426396:function:ArfisDietWebAgentLambda",
+            "messageVersion": "1.0"
+          },
+          "type": "CodeHook"
+        },
+        "sampleUtterances": [
+          "What is my distribution status",
+          "what is my loan status",
+          "what is my loan request status",
+          "my id is {PROJECT_ID} what is my loan status",
+          "Can you help me with my distribution status"
+        ],
+        "slots": [
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.NUMBER",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your project ID?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 1,
+            "name": "PROJECT_ID"
+          }
+        ]
+      },
+      {
+        "name": "DownloadPresentation",
+        "version": "4",
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "sampleUtterances": [
+          "where is my presentation",
+          "I am {User_Name} where is my presentation"
+        ],
+        "slots": [
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.Person",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your name?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 1,
+            "name": "User_Name"
+          }
+        ],
+        "conclusionStatement": {
+          "messages": [
+            {
+              "groupNumber": 1,
+              "contentType": "PlainText",
+              "content": "Here is your presentation link Dear {User_Name}                                                           http://dpchatbot.s3-website-ap-southeast-1.amazonaws.com/chatbot.pptx"
+            }
+          ]
+        }
+      },
+      {
+        "name": "OK",
+        "version": "4",
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "sampleUtterances": [
+          "ok",
+          "okay",
+          "ok thank you",
+          "ok thanks"
+        ],
+        "slots": [],
+        "conclusionStatement": {
+          "messages": [
+            {
+              "groupNumber": 1,
+              "contentType": "PlainText",
+              "content": "Thank you."
+            },
+            {
+              "groupNumber": 1,
+              "contentType": "PlainText",
+              "content": "Welcome."
+            }
+          ]
+        }
+      },
+      {
+        "name": "SSNLoanBal",
+        "version": "8",
+        "fulfillmentActivity": {
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-east-1:306124426396:function:ArfisDietWebAgentLambda",
+            "messageVersion": "1.0"
+          },
+          "type": "CodeHook"
+        },
+        "sampleUtterances": [
+          "i would like to know my loanbalance",
+          "what is my loan balance"
+        ],
+        "slots": [
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.DATE",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your Birthday?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 3,
+            "name": "Birth_Date"
+          },
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.Person",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your first name?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 1,
+            "name": "First_Name"
+          },
+          {
+            "sampleUtterances": [],
+            "slotType": "AMAZON.Person",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What is your last name?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 2,
+            "name": "Last_Name"
+          }
+        ]
+      },
+      {
+        "name": "PackageOverview",
+        "version": "3",
+        "fulfillmentActivity": {
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-east-1:306124426396:function:ArfisDietWebAgentLambda",
+            "messageVersion": "1.0"
+          },
+          "type": "CodeHook"
+        },
+        "sampleUtterances": [
+          "what packages do you have"
+        ],
+        "slots": []
+      },
+      {
+        "name": "PackageDetails",
+        "version": "7",
+        "fulfillmentActivity": {
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-east-1:306124426396:function:ArfisDietWebAgentLambda",
+            "messageVersion": "1.0"
+          },
+          "type": "CodeHook"
+        },
+        "sampleUtterances": [
+          "Please share me the package detail",
+          "can you share me the package details pleas",
+          "i would like to know the package details"
+        ],
+        "slots": [
+          {
+            "sampleUtterances": [],
+            "slotType": "PACKAGES",
+            "slotTypeVersion": "1",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "what is the package name ?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 1,
+            "name": "PACKAGE_NAME"
+          }
+        ]
+      }
+    ],
+    "slotTypes": [
+      {
+        "description": "distribution type",
+        "name": "Distr_Type",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "InService",
+            "synonyms": []
+          },
+          {
+            "value": "Hardship",
+            "synonyms": []
+          },
+          {
+            "value": "Termination",
+            "synonyms": []
+          }
+        ],
+        "valueSelectionStrategy": "ORIGINAL_VALUE"
+      },
+      {
+        "description": "LIST OF PACKAGES",
+        "name": "PACKAGES",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "GOLD",
+            "synonyms": []
+          },
+          {
+            "value": "TRAIL",
+            "synonyms": []
+          },
+          {
+            "value": "PREMIUM",
+            "synonyms": []
+          }
+        ],
+        "valueSelectionStrategy": "ORIGINAL_VALUE"
+      }
+    ],
+    "voiceId": "Salli",
+    "childDirected": false,
+    "locale": "en-US",
+    "idleSessionTTLInSeconds": 300,
+    "clarificationPrompt": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, can you please repeat that?"
+        }
+      ],
+      "maxAttempts": 3
+    },
+    "abortStatement": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, I could not understand. Goodbye."
+        }
+      ]
+    }
+  }
+}
