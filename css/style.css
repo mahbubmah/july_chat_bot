@@ -142,3 +142,8 @@ p.lexError {
 .card .table {
     padding: 15px 30px;
 }
+
+#conversation h6{
+	font-size: 16px;
+	color: #004085;
+}
