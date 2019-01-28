@@ -4,7 +4,7 @@ Github link: https://github.com/mahbubmah/july_chat_bot
 
 Live Deployment Test Link: http://dpchatbot.s3-website-ap-southeast-1.amazonaws.com
 
-
+Presentation link: http://dpchatbot.s3-website-ap-southeast-1.amazonaws.com/chatbot.pptx
 
 For Nerds: Plesae see the chatbot_business_logic.json file for detail logic
 
